@@ -204,6 +204,7 @@ Add the first verified source-backed Food records and regression coverage withou
 - Production category-hint regression check: passed at 390 x 844. Fakulti previewed the map on the first click and opened its overview on the second; switching through Kolej to Food replaced the single hint; Food auto-dismissed while staying active; FENG search still opened the correct marker popup in one click; console errors and warnings remained at zero.
 - Persistent category action local check: passed at 375, 390, and 430 pixel widths plus 1024-pixel desktop. The action remained visible inside the map viewport, used a 44-pixel tap target, showed verified counts, updated from Fakulti/Kolej to Food without stale context, opened the correct overview, and produced no horizontal overflow.
 - Specific-place regression after the persistent action change: FENG search still opened the Faculty of Engineering marker popup in one click and did not show a category-browsing action.
+- Persistent category action production check: commit `7e1a585` reached Vercel Production with Ready status. At 375 pixels, `View all Fakulti` remained visible inside the map, opened the full faculty overview, and cleared the prior search; a fresh FENG search still selected the place in one click, with zero console errors or warnings.
 
 Do not run `pnpm typecheck` concurrently with `pnpm build`; Next.js can rebuild `.next/types` while TypeScript is reading it and produce a transient missing-generated-module error.
 
