@@ -10,9 +10,9 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 
 - Project path: `C:\Users\user\OneDrive\codex\unimas map`
 - Stack: Next.js 16.3.5, React 19.2.8, TypeScript 5, Tailwind CSS 4, Leaflet 1.9 / React Leaflet 5, OpenStreetMap
-- Git is initialized locally on the `main` branch. The first stable commit and GitHub remote are pending because a Git author identity and GitHub authorization are still required.
-- GitHub repository: not connected yet.
-- Vercel project: not connected or deployed yet.
+- Git is initialized on `main`; the stable baseline commit `03cda78` is pushed to `origin/main`.
+- GitHub repository: connected at `https://github.com/leechunteck2007-max/unimas-survival-map` (public).
+- Vercel project: connected to GitHub and deployed at `https://unimas-survival-map.vercel.app`.
 - `AGENTS.md` now contains both the generated Next.js documentation rule and permanent project architecture, data-integrity, and verification rules.
 
 ## Development audit
@@ -46,7 +46,7 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 
 - Residential-college detail parity or a shared place-details panel.
 - Automated rendered search, map-selection, and location interaction checks.
-- A committed Git baseline, connected GitHub repository, and connected Vercel deployment.
+- Real-device verification of browser location permission and walking-route presentation.
 - Optional install/PWA metadata and verified place records for the newly configured campus utility categories.
 
 ### NEEDS REAL DATA
@@ -57,7 +57,7 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 
 ### NEEDS UX IMPROVEMENT
 
-- Mobile behaviour needs repeatable checks at 375, 390, 430, 768, and 1024 pixel widths, especially map controls, route status, and long place names.
+- Mobile behaviour passed manual width checks at 375, 390, and 430 pixels; repeatable automated checks and tablet/desktop coverage at 768 and 1024 pixels are still needed.
 
 ## Prioritized backlog
 
@@ -136,18 +136,18 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 - Add a residential-college detail page or shared place-details panel.
 - Replace older/unverified Kolej imagery as better official recent sources become available.
 - Implement editable community impression tags only after deciding storage, moderation, privacy, and attribution rules.
-- Create the first stable commit after configuring the project owner's Git author name and email, then connect it to the actual GitHub repository.
+- Verify the remaining real-device geolocation permission flows without storing precise coordinates.
 
 ## Exact recommended next task
 
-Complete the GitHub and Vercel setup: create the first stable commit on `main`, push it to the actual `unimas-survival-map` repository, connect that repository to Vercel, and smoke-test the HTTPS deployment.
+Add the first verified source-backed Food records and regression coverage without weakening the project's data-accuracy policy. Separately verify geolocation on a real HTTPS/mobile browser when the user grants permission.
 
 ## Latest development checkpoint
 
-- Last completed task: replaced hard-coded Faculty/Kolej category branches with a 14-category configuration and shared normalized CampusPlace pipeline, added mobile Main/More category UI, safe empty states, category-aware search/markers/Nearby, and future-place regression coverage.
+- Last completed task: created and pushed the stable Git baseline, connected the public GitHub repository to Vercel, deployed the production site, and smoke-tested the production explorer and route API.
 - Current unfinished task: all newly configured categories remain empty because no new UNIMAS place facts or coordinates were fabricated; residential-college details also still exist only in directory cards.
 - Files involved in this checkpoint: `AGENTS.md`, `PROJECT_STATUS.md`, `types/campus-place.ts`, `data/campusCategories.ts`, `data/additionalCampusPlaces.ts`, `data/campusPlaces.ts`, `hooks/useCampusExplorer.tsx`, `components/CategoryList.tsx`, `components/CategoryAvailability.tsx`, `components/SearchBar.tsx`, `components/CampusMap.tsx`, `components/NearbyPlaces.tsx`, both directory components, `app/page.tsx`, and the campus place/explorer tests.
-- Next exact step: finish the first stable Git commit and GitHub/Vercel connection, then resume verified Food data research.
+- Next exact step: confirm GitHub-to-Vercel automatic deployment with this status commit, then resume verified Food data research.
 
 ## GitHub and deployment preparation
 
@@ -155,9 +155,10 @@ Complete the GitHub and Vercel setup: create the first stable commit on `main`, 
 - Environment variables required: none for the current version.
 - `.gitignore` excludes dependencies, Next.js output, environment files, logs, coverage, Vercel local metadata, PEM files, and TypeScript build caches. `.env.example` is explicitly allowed.
 - `README.md` now documents the actual features, pnpm workflow, data-accuracy policy, privacy model, routing dependency, and Vercel compatibility.
-- Git: initialized locally on branch `main`; first commit pending.
-- GitHub: not connected; repository URL pending.
-- Vercel: not connected; production URL pending.
+- Git: initialized locally on branch `main`; baseline commit `03cda78` is pushed and tracks `origin/main`.
+- GitHub: connected at `https://github.com/leechunteck2007-max/unimas-survival-map`.
+- Vercel: connected to GitHub; production URL is `https://unimas-survival-map.vercel.app`.
+- Production deployment: passed on 2026-09-14 with Next.js automatically detected, default build settings, and no environment variables.
 - Production compatibility: no runtime localhost or Windows-path dependency found. Leaflet is client-only, geolocation is client-only and requires HTTPS, and routing is behind `/api/walking-route`.
 
 ## Technical debt
@@ -166,7 +167,7 @@ Complete the GitHub and Vercel setup: create the first stable commit on `main`, 
 - `CampusMap.tsx` and `CollegeDirectory.tsx` are approaching sizes where small presentational extractions would improve maintainability, but no broad refactor is currently justified.
 - Client and server route validation now share one `WalkingRoute` shape and validator; provider-specific conversion remains isolated in `utils/osrm-walking-route.ts`.
 - Rendered React/Leaflet/geolocation interaction tests are not automated yet.
-- The project still has no Git baseline, so repository-level diffs and recovery depend on `PROJECT_STATUS.md` and filesystem history.
+- Rendered interaction coverage remains manual, although Git history now provides a stable baseline for diffs and recovery.
 
 ## Important architecture decisions
 
@@ -190,6 +191,10 @@ Complete the GitHub and Vercel setup: create the first stable commit on `main`, 
 - Browser check after this checkpoint: the homepage returned HTTP 200, search for Cempaka produced one correct result, the explicit Clear action restored all 20 mapped places, and the no-location Near You prompt rendered with its enable button.
 - Responsive interaction check: passed at a 390 x 844 viewport. The 4-by-2 primary category grid, More panel, empty Food state, zero-marker map state, and one-click Cempaka search selection were verified.
 - Browser console during the tested flows: zero errors.
+- Production HTTPS smoke test: homepage returned HTTP 200; FENG and Cempaka searches selected and focused the correct map markers on one click; the empty Food category remained stable; Google Maps navigation links were coordinate-targeted.
+- Production route API smoke test: a campus route returned 2,380 metres, 32 minutes, and 87 geometry points through the server boundary.
+- Production responsive checks: passed at 375, 390, and 430 pixel widths without horizontal overflow or oversized map/category controls.
+- Production geolocation: not yet exercised because sharing the user's precise location requires explicit permission; the site remains fully usable without it.
 
 Do not run `pnpm typecheck` concurrently with `pnpm build`; Next.js can rebuild `.next/types` while TypeScript is reading it and produce a transient missing-generated-module error.
 
