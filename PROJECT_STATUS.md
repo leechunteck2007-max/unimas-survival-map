@@ -159,6 +159,7 @@ Add the first verified source-backed Food records and regression coverage withou
 - GitHub: connected at `https://github.com/leechunteck2007-max/unimas-survival-map`.
 - Vercel: connected to GitHub; production URL is `https://unimas-survival-map.vercel.app`.
 - Production deployment: passed on 2026-09-14 with Next.js automatically detected, default build settings, and no environment variables.
+- Automatic deployment: verified when GitHub push `8ca0e14` produced a new Ready production deployment in Vercel.
 - Production compatibility: no runtime localhost or Windows-path dependency found. Leaflet is client-only, geolocation is client-only and requires HTTPS, and routing is behind `/api/walking-route`.
 
 ## Technical debt
@@ -190,7 +191,7 @@ Add the first verified source-backed Food records and regression coverage withou
 - Search keyboard interaction: Arrow Down selected the second result, Enter selected FMHS and opened its popup, Escape closed the list, and clicking the focused input reopened it.
 - Browser check after this checkpoint: the homepage returned HTTP 200, search for Cempaka produced one correct result, the explicit Clear action restored all 20 mapped places, and the no-location Near You prompt rendered with its enable button.
 - Responsive interaction check: passed at a 390 x 844 viewport. The 4-by-2 primary category grid, More panel, empty Food state, zero-marker map state, and one-click Cempaka search selection were verified.
-- Browser console during the tested flows: zero errors.
+- Browser console during the tested local and production flows: zero errors.
 - Production HTTPS smoke test: homepage returned HTTP 200; FENG and Cempaka searches selected and focused the correct map markers on one click; the empty Food category remained stable; Google Maps navigation links were coordinate-targeted.
 - Production route API smoke test: a campus route returned 2,380 metres, 32 minutes, and 87 geometry points through the server boundary.
 - Production responsive checks: passed at 375, 390, and 430 pixel widths without horizontal overflow or oversized map/category controls.
