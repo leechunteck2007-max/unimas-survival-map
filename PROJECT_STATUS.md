@@ -6,6 +6,18 @@ Last updated: 2026-09-14
 
 Maintain a reliable, mobile-first campus utility with a scalable shared category pipeline, without removing working features or presenting unverified campus data as fact.
 
+## Walking-route shortcut audit checkpoint
+
+- Audited 110 common routes using the same FOSSGIS foot-routing graph as production: 100 Kolej → Fakulti routes and 10 Dahlia Bus Stop → Fakulti routes.
+- 52 routes exceeded a route/straight-line ratio of 1.8; 27 exceeded 2.5. These are investigation signals, not proof of shortcuts.
+- Confirmed the application is using the FOSSGIS `routed-foot` graph. Both `/driving/` and `/foot/` API tokens returned the same controlled walking result, and detailed steps reported walking mode; no car-profile production bug was found.
+- Identified three concrete OSM topology candidates: a 13.6 m Cempaka-side gap, a 16 m Dahlia-side gap, and a central pair of coincident footways represented by different node IDs.
+- Found no restrictive access tags on the inspected candidate ways, but missing access tags are not treated as proof of public access.
+- Current building-object coordinates snap up to 61 m from the foot graph, and no mapped `entrance=*` nodes were returned in the main-campus audit box. Several faculty entrance coordinates require field verification.
+- Kolej Kasturi's coordinate reverse-resolves near the Kuching FMHS site and is far from the Kota Samarahan main campus. Its extreme routes are treated as a location-identity/cross-campus issue, not a small shortcut.
+- No production routing configuration, coordinates, or path geometry were changed.
+- `SHORTCUT_CANDIDATES.md` contains the prioritized evidence, classifications, exact coordinates, OSM way links, controls, and manual-verification checklist.
+
 ## Bus V1 checkpoint
 
 - Bus is now a separate transportation layer with structured `BusStop`, `BusRoute`, `RouteStop`, `BusSchedule`, and generic `JourneyPlan` models.
@@ -155,14 +167,14 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 
 ## Exact recommended next task
 
-Collect and verify the actual boarding coordinates for a second useful stop on each historical loop, then add them to `data/busTransit.ts`. Prefer a current official timetable with an effective date and clarified time meaning. Separately verify geolocation on a real HTTPS/mobile browser only when the user grants permission.
+Physically verify the Cempaka 13.6 m gap first (`1.4659101, 110.4341641` to `1.4658017, 110.4342205`), documenting public access, barriers, surface, level changes, and GPS. Do not change production routing or OSM topology until that evidence exists.
 
 ## Latest development checkpoint
 
-- Last completed task: implemented the generic Bus V1 foundation, structured 11 stops/two loops/four reference schedules, mapped only Dahlia, integrated search/map/location/walking/navigation, and added a partial-data-safe mobile journey UI.
-- Current unfinished task: 10 stop coordinates, current-service confirmation, stop-level timings, and ride durations remain unavailable and were not fabricated. Precise Bus journey recommendations remain intentionally disabled with only one mapped stop.
-- Files involved in this checkpoint: `types/transit.ts`, `data/busTransit.ts`, `data/campusSearch.ts`, `utils/transit.ts`, `components/BusTransitSection.tsx`, `components/SearchBar.tsx`, `components/CampusMap.tsx`, explorer/category integration, tests, README, `BUS_DATA_STATUS.md`, and this file.
-- Next exact step: add verified actual boarding coordinates for useful stops on both loops and re-run the full Bus journey flow.
+- Last completed task: audited the production foot-routing profile, scanned 110 common routes, inspected suspicious route geometry and OSM pedestrian topology, and documented prioritized shortcut candidates without changing production routing.
+- Current unfinished task: none of the three graph-gap candidates or proposed entrance points has been physically verified; their real-world public accessibility remains unknown.
+- Files involved in this checkpoint: `SHORTCUT_CANDIDATES.md` and `PROJECT_STATUS.md` only.
+- Next exact step: verify the Cempaka east-side gap on campus and return GPS/access/barrier evidence before any routing or OSM change.
 
 ## GitHub and deployment preparation
 
@@ -201,6 +213,10 @@ Collect and verify the actual boarding coordinates for a second useful stop on e
 - `pnpm typecheck`: passed on 2026-09-14 with incremental caching disabled.
 - `pnpm test`: 8 files and 45 tests passed on 2026-09-14 after Bus V1.
 - `pnpm build`: passed on 2026-09-14; generated 15 static/generated pages and the dynamic walking-route API.
+- Shortcut audit checkpoint: lint, non-incremental TypeScript, all 45 tests, and the 15-page production build passed again after the documentation-only audit.
+- Routing-profile control: FOSSGIS `routed-foot` returned identical 844 m / 675 s results with `driving` and `foot` API tokens, and detailed route steps used walking mode.
+- Route-ratio matrix: 110 common routes processed successfully in one OSRM table request; 52 exceeded 1.8 and 27 exceeded 2.5.
+- OSM topology inspection: 22 pedestrian ways examined in the main-campus box; three unconnected/coincident endpoint candidates were recorded, with no production or OSM edit performed.
 - Bus V1 local browser check: passed. Dahlia global search showed distinct Kolej and Bus Stop results; selecting the Bus Stop focused its mapped marker and popup; the Bus destination search accepted FENG and rendered separate Walk/Bus cards.
 - Bus V1 responsive check: passed at a 390-pixel requested viewport (375-pixel content viewport) without horizontal overflow. The destination search, Walk/Bus cards, Nearby Bus Stops, routes, and stop list remained usable.
 - Bus V1 browser console check: zero new errors or warnings after a clean reload. A stale development-only hot-reload message from the temporary file replacement was excluded by timestamp and did not recur.
