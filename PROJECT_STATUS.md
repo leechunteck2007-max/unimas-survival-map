@@ -149,7 +149,7 @@ Add the first verified source-backed Food records and regression coverage withou
 - Last completed task: added the shared two-step category hint, preserved one-click place selection, and verified the interaction at a 390 x 844 mobile viewport.
 - Current unfinished task: all newly configured categories remain empty because no new UNIMAS place facts or coordinates were fabricated; residential-college details also still exist only in directory cards.
 - Files involved in this checkpoint: `components/CategoryList.tsx`, `utils/category-interaction.ts`, `app/globals.css`, `tests/category-interaction.test.ts`, and `PROJECT_STATUS.md`.
-- Next exact step: deploy and verify the category hint on production, then resume verified Food data research.
+- Next exact step: resume verified Food data research and add only source-backed names, coordinates, and source URLs.
 
 ## GitHub and deployment preparation
 
@@ -200,6 +200,8 @@ Add the first verified source-backed Food records and regression coverage withou
 - Production geolocation: not yet exercised because sharing the user's precise location requires explicit permission; the site remains fully usable without it.
 - Local category-hint regression check: Fakulti and Kolej showed the correct first-click hint and second-click overview; switching categories replaced the hint; Food auto-dismissed after 2.8 seconds while remaining active; FENG search still focused its marker and popup in one click.
 - Local category-hint mobile/console check: passed at 390 x 844 with a compact safe-area-aware toast and zero console errors or warnings.
+- Production category-hint deployment: commit `9aef8a4` reached Vercel Production with Ready status on 2026-09-14.
+- Production category-hint regression check: passed at 390 x 844. Fakulti previewed the map on the first click and opened its overview on the second; switching through Kolej to Food replaced the single hint; Food auto-dismissed while staying active; FENG search still opened the correct marker popup in one click; console errors and warnings remained at zero.
 
 Do not run `pnpm typecheck` concurrently with `pnpm build`; Next.js can rebuild `.next/types` while TypeScript is reading it and produce a transient missing-generated-module error.
 
