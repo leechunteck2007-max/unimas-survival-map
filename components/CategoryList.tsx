@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AppIcon, type IconName } from "@/components/icons";
-import { campusCategories } from "@/data/campusCategories";
+import { campusCategories, getCampusCategory } from "@/data/campusCategories";
 import { campusPlacesInCategory } from "@/data/campusPlaces";
 import { useCampusExplorer, type CampusCategory } from "@/hooks/useCampusExplorer";
+import {
+  getCategoryClickIntent,
+  getCategoryOverviewTargetId,
+} from "@/utils/category-interaction";
 
 type Category = {
   id: CampusCategory;
@@ -15,22 +19,73 @@ type Category = {
 const allCategory: Category = { id: "all", label: "All", icon: "grid" };
 const primaryCategories = campusCategories.filter((category) => category.primary);
 const moreCategories = campusCategories.filter((category) => !category.primary);
+const CATEGORY_HINT_DURATION_MS = 2800;
+
+type CategoryHint = {
+  category: Exclude<CampusCategory, "all">;
+  version: number;
+};
 
 export function CategoryList() {
   const { activeCategory, selectCategory: updateCategory } = useCampusExplorer();
   const [showMore, setShowMore] = useState(false);
+  const [hint, setHint] = useState<CategoryHint>();
+  const activeCategoryRef = useRef(activeCategory);
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hintVersionRef = useRef(0);
+
+  useLayoutEffect(() => {
+    activeCategoryRef.current = activeCategory;
+  }, [activeCategory]);
+
+  const dismissHint = useCallback(() => {
+    if (hintTimerRef.current) {
+      clearTimeout(hintTimerRef.current);
+      hintTimerRef.current = null;
+    }
+    setHint(undefined);
+  }, []);
+
+  const showCategoryHint = useCallback((category: Exclude<CampusCategory, "all">) => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+
+    hintVersionRef.current += 1;
+    setHint({ category, version: hintVersionRef.current });
+    hintTimerRef.current = setTimeout(() => {
+      hintTimerRef.current = null;
+      setHint(undefined);
+    }, CATEGORY_HINT_DURATION_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    };
+  }, []);
 
   function selectCategory(category: CampusCategory) {
-    updateCategory(category);
+    const intent = getCategoryClickIntent(activeCategoryRef.current, category);
+
+    if (intent === "preview") {
+      activeCategoryRef.current = category;
+      updateCategory(category);
+
+      if (category === "all") {
+        dismissHint();
+      } else {
+        showCategoryHint(category);
+      }
+    } else {
+      dismissHint();
+    }
 
     const targetId =
-      category === "college"
-        ? "colleges-heading"
-        : category === "faculty"
-          ? "faculties-heading"
-          : "map-heading";
+      intent === "preview"
+        ? "map-heading"
+        : getCategoryOverviewTargetId(category);
 
-    document.getElementById(targetId)?.scrollIntoView({
+    const target = document.getElementById(targetId) ?? document.getElementById("map-heading");
+    target?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
@@ -117,6 +172,24 @@ export function CategoryList() {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {hint && (
+        <div
+          key={hint.version}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="category-tap-hint pointer-events-none fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[1000] mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-white/10"
+        >
+          <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-emerald-400/20 text-emerald-200">
+            <AppIcon name={getCampusCategory(hint.category).icon} className="size-4" />
+          </span>
+          <span>
+            Tap again to {campusPlacesInCategory(hint.category).length > 0 ? "view all" : "explore"}{" "}
+            {getCampusCategory(hint.category).label}
+          </span>
         </div>
       )}
     </div>
