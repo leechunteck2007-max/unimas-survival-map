@@ -11,6 +11,8 @@ import {
   useMap,
 } from "react-leaflet";
 import { getCampusCategory } from "@/data/campusCategories";
+import { getBusStop, mappableBusStops, routesServingStop } from "@/data/busTransit";
+import { searchCampusEntities } from "@/data/campusSearch";
 import {
   getCampusPlace,
   hasValidPlaceCoordinates,
@@ -24,6 +26,7 @@ import type {
   CampusPlace,
   CampusPlaceCategory,
 } from "@/types/campus-place";
+import type { BusStop } from "@/types/transit";
 import {
   formatDistance,
   formatDuration,
@@ -81,6 +84,16 @@ function MapLocationController({
   return null;
 }
 
+function BusStopSelectionController({ stop, selectionVersion }: { stop?: BusStop; selectionVersion: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (stop && typeof stop.latitude === "number" && typeof stop.longitude === "number") {
+      map.flyTo([stop.latitude, stop.longitude], 17, { duration: 0.65 });
+    }
+  }, [map, selectionVersion, stop]);
+  return null;
+}
+
 function categoryMatches(placeCategory: CampusPlaceCategory, uiCategory: CampusCategory) {
   return uiCategory === "all" || placeCategory === uiCategory;
 }
@@ -92,7 +105,9 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
     finishCategoryBrowse,
     query,
     selectedPlace: sharedSelectedPlace,
+    selectedBusStopId,
     selectionVersion,
+    selectBusStop,
     selectPlace,
     setQuery,
   } = useCampusExplorer();
@@ -102,6 +117,7 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
     [initialFacultyId],
   );
   const selectedPlace = facultyOnly ? initialPlace : sharedSelectedPlace;
+  const selectedBusStop = facultyOnly || !selectedBusStopId ? undefined : getBusStop(selectedBusStopId);
   const activeCategory: CampusCategory = facultyOnly ? "faculty" : sharedCategory;
 
   const visiblePlaces = useMemo(() => {
@@ -115,11 +131,25 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
     );
   }, [activeCategory, facultyOnly, query]);
 
+  const visibleBusStops = useMemo(() => {
+    if (facultyOnly || (activeCategory !== "all" && activeCategory !== "bus_stop")) return [];
+    if (!query.trim()) return mappableBusStops;
+    const matchingIds = new Set(searchCampusEntities(query)
+      .filter((result) => result.kind === "bus_stop")
+      .map((result) => result.stop.id));
+    return mappableBusStops.filter((stop) => matchingIds.has(stop.id));
+  }, [activeCategory, facultyOnly, query]);
+
   const destination = selectedPlace && hasValidPlaceCoordinates(selectedPlace)
     ? { latitude: selectedPlace.latitude, longitude: selectedPlace.longitude }
     : undefined;
+  const walkingDestination = destination ?? (
+    selectedBusStop && typeof selectedBusStop.latitude === "number" && typeof selectedBusStop.longitude === "number"
+      ? { latitude: selectedBusStop.latitude, longitude: selectedBusStop.longitude }
+      : undefined
+  );
   const { route, status: routeStatus, straightLineDistance } =
-    useWalkingRoute(destination);
+    useWalkingRoute(walkingDestination);
   const locationErrorMessage = getLocationErrorMessage(locationStatus);
 
   const visibleCategoryLabels = Array.from(
@@ -128,7 +158,9 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
   let mapStatus = visiblePlaces.length > 0
     ? `${visiblePlaces.length} mapped places${visibleCategoryLabels.length ? ` · ${visibleCategoryLabels.join(", ")}` : ""}.`
     : "No verified mapped places in this category yet.";
+  if (visibleBusStops.length > 0) mapStatus = `${visiblePlaces.length + visibleBusStops.length} mapped places and stops.`;
   if (selectedPlace) mapStatus = "Selected location.";
+  if (selectedBusStop) mapStatus = "Selected bus stop.";
   if (routeStatus === "loading") mapStatus = "Calculating walking route…";
   if (routeStatus === "ready" && route) {
     mapStatus = `${formatDistance(route.distanceMeters)} walk · ${formatDuration(route.durationSeconds)}`;
@@ -141,7 +173,9 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
     ? getCampusCategory(browsingCategory)
     : undefined;
   const browsingCategoryCount = browsingCategory
-    ? mappableCampusPlaces.filter((place) => place.category === browsingCategory).length
+    ? browsingCategory === "bus_stop"
+      ? mappableBusStops.length
+      : mappableCampusPlaces.filter((place) => place.category === browsingCategory).length
     : 0;
 
   function openCategoryOverview() {
@@ -173,6 +207,7 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
           maxZoom={19}
         />
         <MapSelectionController place={selectedPlace} selectionVersion={selectionVersion} />
+        <BusStopSelectionController stop={selectedBusStop} selectionVersion={selectionVersion} />
         <MapLocationController
           latitude={location?.latitude}
           longitude={location?.longitude}
@@ -200,6 +235,15 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
               </Tooltip>
             </CircleMarker>
           );
+        })}
+
+        {visibleBusStops.map((stop) => {
+          const isSelected = stop.id === selectedBusStop?.id;
+          return <CircleMarker key={`bus-stop:${stop.id}`} center={[stop.latitude, stop.longitude]}
+            radius={isSelected ? 11 : 8} eventHandlers={{ click: () => selectBusStop(stop.id) }}
+            pathOptions={{ color: isSelected ? "#0c4a6e" : "#0369a1", fillColor: "#38bdf8", fillOpacity: 0.95, weight: isSelected ? 4 : 3 }}>
+            <Tooltip permanent={isSelected} direction="top" offset={[0, -8]}>🚌 {stop.name}</Tooltip>
+          </CircleMarker>;
         })}
 
         {location && (
@@ -259,6 +303,17 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
             ) : null}
           </Popup>
         )}
+
+        {selectedBusStop && typeof selectedBusStop.latitude === "number" && typeof selectedBusStop.longitude === "number" && (
+          <Popup key={`bus-stop:${selectedBusStop.id}:${selectionVersion}`} position={[selectedBusStop.latitude, selectedBusStop.longitude]}>
+            <strong>{selectedBusStop.name}</strong><br />
+            <span>Bus Stop · {routesServingStop(selectedBusStop.id).map((route) => route.name).join(", ")}</span><br />
+            <span>Verification: {selectedBusStop.verificationStatus.replaceAll("_", " ")}</span><br />
+            {route && <><span>{formatDistance(route.distanceMeters)} walk · {formatDuration(route.durationSeconds)}</span><br /></>}
+            <span>Historical reference schedule available in the Bus section.</span><br />
+            <a href={selectedBusStop.source.url} target="_blank" rel="noreferrer">Location source</a>
+          </Popup>
+        )}
       </MapContainer>
 
       <button
@@ -307,7 +362,7 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
         ) : (
           <div className="pointer-events-none">
             <p className="text-sm font-semibold text-slate-950">
-              {selectedPlace?.name ?? "UNIMAS area map"}
+              {selectedPlace?.name ?? selectedBusStop?.name ?? "UNIMAS area map"}
             </p>
             <p className="mt-1 text-xs leading-5 text-slate-600">{mapStatus}</p>
           </div>

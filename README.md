@@ -19,8 +19,11 @@ UNIMAS Survival Map helps students find verified campus places, explore them on 
 - Google Maps walking-navigation links
 - Mobile-friendly selector for 14 campus categories
 - Safe empty states for categories that do not yet have verified place data
+- Bus V1 transportation layer with 11 historical schedule-listed stops, two structured loops, reference departure schedules, global Bus Stop search, and partial-data-safe journey planning
 
-Food, bus stops, study places, printing, stores, ATMs, toilets, parking, health, sports, prayer facilities, and administration are configured as categories but do not yet contain published place records.
+Only Dahlia Bus Stop currently has a verified mapped coordinate. The other 10 schedule-listed stops remain visible in route data but are excluded from map and walking calculations until their actual boarding coordinates are verified. See [`BUS_DATA_STATUS.md`](./BUS_DATA_STATUS.md).
+
+Food, study places, printing, stores, ATMs, toilets, parking, health, sports, prayer facilities, and administration are configured as categories but do not yet contain published place records.
 
 ## Tech stack
 
@@ -77,6 +80,8 @@ Campus information can change. Existing place records retain source links and un
 - A selected destination requests a walking route through the app's server endpoint.
 - If routing is unavailable, the interface falls back to a clearly labelled straight-line estimate.
 - Routing availability depends on a public third-party service and is not guaranteed.
+- Bus planning accepts any coordinate-backed CampusPlace category. It shortlists stop candidates before comparing route compatibility and does not treat the closest stop as automatically best.
+- Historical Bus times are labelled as reference route departures, never as live or stop-level arrivals.
 
 ## Deployment
 

@@ -4,7 +4,7 @@ export type Coordinates = {
 };
 
 export function hasValidCoordinates(
-  coordinates: Partial<Coordinates> | undefined,
+  coordinates: { latitude?: number | null; longitude?: number | null } | undefined,
 ): coordinates is Coordinates {
   return (
     typeof coordinates?.latitude === "number" &&

@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/AppHeader";
+import { BusTransitSection } from "@/components/BusTransitSection";
 import { CampusMapSection } from "@/components/CampusMapSection";
 import { CategoryAvailability } from "@/components/CategoryAvailability";
 import { CategoryList } from "@/components/CategoryList";
@@ -58,6 +59,8 @@ export default function Home() {
           </div>
           <CampusMapSection />
         </section>
+
+        <BusTransitSection />
 
         <NearbyPlaces />
 

@@ -6,6 +6,19 @@ Last updated: 2026-09-14
 
 Maintain a reliable, mobile-first campus utility with a scalable shared category pipeline, without removing working features or presenting unverified campus data as fact.
 
+## Bus V1 checkpoint
+
+- Bus is now a separate transportation layer with structured `BusStop`, `BusRoute`, `RouteStop`, `BusSchedule`, and generic `JourneyPlan` models.
+- All 11 historical schedule-listed stops are represented. Dahlia Bus Stop uses the separate mapped coordinate `1.471740, 110.428720`; the other 10 coordinates remain `null`.
+- Two loop orders and four structured weekday/weekend-public-holiday reference schedules live in `data/busTransit.ts`, outside UI components.
+- Global search distinguishes CampusPlace and Bus Stop results; a Dahlia search returns both Kolej Dahlia and Dahlia Bus Stop.
+- The map renders only coordinate-backed Bus stops and safely ignores null coordinates.
+- The mobile Bus section reuses shared CampusPlace destinations, location, walking routing, and navigation.
+- Generic journey logic shortlists coordinate-backed stops, respects route direction and loops, separates nearest from best boarding stop, and accepts future category strings without Bus-specific code.
+- With only one mapped stop, the UI deliberately shows partial-data status, never invents a Bus route/ETA, and keeps Walk available.
+- `BUS_DATA_STATUS.md` records source confidence, all missing data, and exact next field-data needs.
+- Current local automated checkpoint: 8 test files and 45 tests pass.
+
 ## Repository state
 
 - Project path: `C:\Users\user\OneDrive\codex\unimas map`
@@ -142,14 +155,14 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 
 ## Exact recommended next task
 
-Add the first verified source-backed Food records and regression coverage without weakening the project's data-accuracy policy. Separately verify geolocation on a real HTTPS/mobile browser when the user grants permission.
+Collect and verify the actual boarding coordinates for a second useful stop on each historical loop, then add them to `data/busTransit.ts`. Prefer a current official timetable with an effective date and clarified time meaning. Separately verify geolocation on a real HTTPS/mobile browser only when the user grants permission.
 
 ## Latest development checkpoint
 
-- Last completed task: replaced the temporary category hint with a persistent in-map `View all` action, preserved the original second-click shortcut and one-click place selection, and verified mobile and desktop layouts.
-- Current unfinished task: all newly configured categories remain empty because no new UNIMAS place facts or coordinates were fabricated; residential-college details also still exist only in directory cards.
-- Files involved in this checkpoint: `components/CategoryList.tsx`, `components/CampusMap.tsx`, `hooks/useCampusExplorer.tsx`, `app/globals.css`, `utils/category-interaction.ts`, both category/explorer tests, and `PROJECT_STATUS.md`.
-- Next exact step: resume verified Food data research and add only source-backed names, coordinates, and source URLs.
+- Last completed task: implemented the generic Bus V1 foundation, structured 11 stops/two loops/four reference schedules, mapped only Dahlia, integrated search/map/location/walking/navigation, and added a partial-data-safe mobile journey UI.
+- Current unfinished task: 10 stop coordinates, current-service confirmation, stop-level timings, and ride durations remain unavailable and were not fabricated. Precise Bus journey recommendations remain intentionally disabled with only one mapped stop.
+- Files involved in this checkpoint: `types/transit.ts`, `data/busTransit.ts`, `data/campusSearch.ts`, `utils/transit.ts`, `components/BusTransitSection.tsx`, `components/SearchBar.tsx`, `components/CampusMap.tsx`, explorer/category integration, tests, README, `BUS_DATA_STATUS.md`, and this file.
+- Next exact step: add verified actual boarding coordinates for useful stops on both loops and re-run the full Bus journey flow.
 
 ## GitHub and deployment preparation
 
@@ -186,8 +199,11 @@ Add the first verified source-backed Food records and regression coverage withou
 
 - `pnpm lint`: passed on 2026-09-14.
 - `pnpm typecheck`: passed on 2026-09-14 with incremental caching disabled.
-- `pnpm test`: 7 files and 37 tests passed on 2026-09-14.
+- `pnpm test`: 8 files and 45 tests passed on 2026-09-14 after Bus V1.
 - `pnpm build`: passed on 2026-09-14; generated 15 static/generated pages and the dynamic walking-route API.
+- Bus V1 local browser check: passed. Dahlia global search showed distinct Kolej and Bus Stop results; selecting the Bus Stop focused its mapped marker and popup; the Bus destination search accepted FENG and rendered separate Walk/Bus cards.
+- Bus V1 responsive check: passed at a 390-pixel requested viewport (375-pixel content viewport) without horizontal overflow. The destination search, Walk/Bus cards, Nearby Bus Stops, routes, and stop list remained usable.
+- Bus V1 browser console check: zero new errors or warnings after a clean reload. A stale development-only hot-reload message from the temporary file replacement was excluded by timestamp and did not recur.
 - Walking-route smoke test: passed with distance, ETA, and 87 geometry points for a UNIMAS sample route.
 - Browser interaction checks: Faculty of Engineering and Kolej Cempaka opened on the first click; repeated Faculty of Engineering selection reopened its popup.
 - Search keyboard interaction: Arrow Down selected the second result, Enter selected FMHS and opened its popup, Escape closed the list, and clicking the focused input reopened it.

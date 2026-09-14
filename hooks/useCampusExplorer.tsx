@@ -16,10 +16,12 @@ type CampusExplorerContextValue = {
   activeCategory: CampusCategory;
   browsingCategory?: CampusPlaceCategory;
   query: string;
+  selectedBusStopId?: string;
   selectedPlace?: CampusPlace;
   selectionVersion: number;
   finishCategoryBrowse: () => void;
   selectCategory: (category: CampusCategory) => void;
+  selectBusStop: (stopId: string) => void;
   selectPlace: (place: CampusPlace, options?: { clearSearch?: boolean }) => void;
   setQuery: (query: string) => void;
 };
@@ -30,6 +32,7 @@ export type CampusExplorerState = {
   activeCategory: CampusCategory;
   browsingCategory?: CampusPlaceCategory;
   query: string;
+  selectedBusStopId?: string;
   selectedPlace?: CampusPlace;
   selectionVersion: number;
 };
@@ -38,6 +41,7 @@ type CampusExplorerAction =
   | { type: "category-selected"; category: CampusCategory }
   | { type: "category-browse-finished" }
   | { type: "query-changed"; query: string }
+  | { type: "bus-stop-selected"; stopId: string }
   | { type: "place-selected"; place: CampusPlace; clearSearch?: boolean };
 
 export const initialCampusExplorerState: CampusExplorerState = {
@@ -63,6 +67,10 @@ export function campusExplorerReducer(
       ...state,
       activeCategory: action.category,
       browsingCategory: action.category === "all" ? undefined : action.category,
+      selectedBusStopId:
+        action.category === "all" || action.category === "bus_stop"
+          ? state.selectedBusStopId
+          : undefined,
       selectedPlace,
     };
   }
@@ -75,11 +83,23 @@ export function campusExplorerReducer(
     return { ...state, query: action.query };
   }
 
+  if (action.type === "bus-stop-selected") {
+    return {
+      ...state,
+      activeCategory: "bus_stop",
+      browsingCategory: undefined,
+      selectedBusStopId: action.stopId,
+      selectedPlace: undefined,
+      selectionVersion: state.selectionVersion + 1,
+    };
+  }
+
   return {
     ...state,
     activeCategory: categoryForPlace(action.place.category),
     query: action.clearSearch ? "" : state.query,
     browsingCategory: undefined,
+    selectedBusStopId: undefined,
     selectedPlace: action.place,
     selectionVersion: state.selectionVersion + 1,
   };
@@ -110,6 +130,10 @@ export function CampusExplorerProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const selectBusStop = useCallback((stopId: string) => {
+    dispatch({ type: "bus-stop-selected", stopId });
+  }, []);
+
   const setQuery = useCallback((query: string) => {
     dispatch({ type: "query-changed", query });
   }, []);
@@ -119,10 +143,11 @@ export function CampusExplorerProvider({ children }: { children: ReactNode }) {
       ...state,
       finishCategoryBrowse,
       selectCategory,
+      selectBusStop,
       selectPlace,
       setQuery,
     }),
-    [state, finishCategoryBrowse, selectCategory, selectPlace, setQuery],
+    [state, finishCategoryBrowse, selectBusStop, selectCategory, selectPlace, setQuery],
   );
 
   return (

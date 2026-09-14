@@ -7,7 +7,7 @@ import { useCampusExplorer } from "@/hooks/useCampusExplorer";
 
 export function CategoryAvailability() {
   const { activeCategory } = useCampusExplorer();
-  if (activeCategory === "all") return null;
+  if (activeCategory === "all" || activeCategory === "bus_stop") return null;
 
   const category = getCampusCategory(activeCategory);
   const count = campusPlacesInCategory(activeCategory).length;

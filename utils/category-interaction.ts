@@ -19,6 +19,7 @@ export function getCategoryOverviewTargetId(
 ) {
   if (category === "faculty") return "faculties-heading";
   if (category === "college") return "colleges-heading";
+  if (category === "bus_stop") return "bus-heading";
   if (category === "all") return "map-heading";
   return "category-availability";
 }
