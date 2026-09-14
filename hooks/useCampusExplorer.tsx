@@ -14,9 +14,11 @@ export type CampusCategory = "all" | CampusPlaceCategory;
 
 type CampusExplorerContextValue = {
   activeCategory: CampusCategory;
+  browsingCategory?: CampusPlaceCategory;
   query: string;
   selectedPlace?: CampusPlace;
   selectionVersion: number;
+  finishCategoryBrowse: () => void;
   selectCategory: (category: CampusCategory) => void;
   selectPlace: (place: CampusPlace, options?: { clearSearch?: boolean }) => void;
   setQuery: (query: string) => void;
@@ -26,6 +28,7 @@ const CampusExplorerContext = createContext<CampusExplorerContextValue | null>(n
 
 export type CampusExplorerState = {
   activeCategory: CampusCategory;
+  browsingCategory?: CampusPlaceCategory;
   query: string;
   selectedPlace?: CampusPlace;
   selectionVersion: number;
@@ -33,6 +36,7 @@ export type CampusExplorerState = {
 
 type CampusExplorerAction =
   | { type: "category-selected"; category: CampusCategory }
+  | { type: "category-browse-finished" }
   | { type: "query-changed"; query: string }
   | { type: "place-selected"; place: CampusPlace; clearSearch?: boolean };
 
@@ -55,7 +59,16 @@ export function campusExplorerReducer(
       action.category === "all" || state.selectedPlace?.category === action.category
         ? state.selectedPlace
         : undefined;
-    return { ...state, activeCategory: action.category, selectedPlace };
+    return {
+      ...state,
+      activeCategory: action.category,
+      browsingCategory: action.category === "all" ? undefined : action.category,
+      selectedPlace,
+    };
+  }
+
+  if (action.type === "category-browse-finished") {
+    return { ...state, browsingCategory: undefined };
   }
 
   if (action.type === "query-changed") {
@@ -66,6 +79,7 @@ export function campusExplorerReducer(
     ...state,
     activeCategory: categoryForPlace(action.place.category),
     query: action.clearSearch ? "" : state.query,
+    browsingCategory: undefined,
     selectedPlace: action.place,
     selectionVersion: state.selectionVersion + 1,
   };
@@ -79,6 +93,10 @@ export function CampusExplorerProvider({ children }: { children: ReactNode }) {
 
   const selectCategory = useCallback((category: CampusCategory) => {
     dispatch({ type: "category-selected", category });
+  }, []);
+
+  const finishCategoryBrowse = useCallback(() => {
+    dispatch({ type: "category-browse-finished" });
   }, []);
 
   const selectPlace = useCallback(
@@ -99,11 +117,12 @@ export function CampusExplorerProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       ...state,
+      finishCategoryBrowse,
       selectCategory,
       selectPlace,
       setQuery,
     }),
-    [state, selectCategory, selectPlace, setQuery],
+    [state, finishCategoryBrowse, selectCategory, selectPlace, setQuery],
   );
 
   return (

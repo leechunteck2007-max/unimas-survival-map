@@ -30,6 +30,7 @@ import {
   formatStraightLineDistance,
 } from "@/utils/distance";
 import { getLocationErrorMessage } from "@/utils/geolocation";
+import { getCategoryOverviewTargetId } from "@/utils/category-interaction";
 
 const unimasArea: [number, number] = [1.46596, 110.43408];
 
@@ -87,10 +88,13 @@ function categoryMatches(placeCategory: CampusPlaceCategory, uiCategory: CampusC
 export default function CampusMap({ facultyOnly = false, initialFacultyId }: CampusMapProps) {
   const {
     activeCategory: sharedCategory,
+    browsingCategory,
+    finishCategoryBrowse,
     query,
     selectedPlace: sharedSelectedPlace,
     selectionVersion,
     selectPlace,
+    setQuery,
   } = useCampusExplorer();
   const { location, requestLocation, status: locationStatus } = useUserLocation();
   const initialPlace = useMemo(
@@ -131,6 +135,25 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
   }
   if (routeStatus === "fallback" && straightLineDistance !== undefined) {
     mapStatus = `${formatStraightLineDistance(straightLineDistance)} · walking route unavailable`;
+  }
+
+  const browsingCategoryDefinition = browsingCategory
+    ? getCampusCategory(browsingCategory)
+    : undefined;
+  const browsingCategoryCount = browsingCategory
+    ? mappableCampusPlaces.filter((place) => place.category === browsingCategory).length
+    : 0;
+
+  function openCategoryOverview() {
+    if (!browsingCategory) return;
+
+    const targetId = getCategoryOverviewTargetId(browsingCategory);
+    finishCategoryBrowse();
+    setQuery("");
+    requestAnimationFrame(() => {
+      const target = document.getElementById(targetId) ?? document.getElementById("map-heading");
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   return (
@@ -260,11 +283,35 @@ export default function CampusMap({ facultyOnly = false, initialFacultyId }: Cam
         </p>
       )}
 
-      <div className="pointer-events-none absolute inset-x-4 bottom-4 z-[500] rounded-2xl bg-white/95 p-3 shadow-lg shadow-slate-900/10 backdrop-blur sm:inset-x-auto sm:right-4 sm:max-w-xs">
-        <p className="text-sm font-semibold text-slate-950">
-          {selectedPlace?.name ?? "UNIMAS area map"}
-        </p>
-        <p className="mt-1 text-xs leading-5 text-slate-600">{mapStatus}</p>
+      <div className="absolute inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[500] rounded-2xl bg-white/95 p-3 shadow-lg shadow-slate-900/10 backdrop-blur sm:inset-x-auto sm:right-4 sm:max-w-sm">
+        {browsingCategoryDefinition ? (
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-slate-950">
+                {browsingCategoryDefinition.label}
+              </p>
+              <p className="mt-0.5 text-xs leading-5 text-slate-600">
+                {browsingCategoryCount === 0
+                  ? "No verified locations yet"
+                  : `${browsingCategoryCount} verified ${browsingCategoryCount === 1 ? "location" : "locations"}`}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={openCategoryOverview}
+              className="min-h-11 shrink-0 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            >
+              View all {browsingCategoryDefinition.shortLabel}
+            </button>
+          </div>
+        ) : (
+          <div className="pointer-events-none">
+            <p className="text-sm font-semibold text-slate-950">
+              {selectedPlace?.name ?? "UNIMAS area map"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-slate-600">{mapStatus}</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -65,6 +65,41 @@ describe("campus explorer selection state", () => {
     });
 
     expect(filtered.activeCategory).toBe("food");
+    expect(filtered.browsingCategory).toBe("food");
     expect(filtered.selectedPlace).toBeUndefined();
+  });
+
+  it("updates and clears category browsing context without affecting selection", () => {
+    const facultyPreview = campusExplorerReducer(initialCampusExplorerState, {
+      type: "category-selected",
+      category: "faculty",
+    });
+    const collegePreview = campusExplorerReducer(facultyPreview, {
+      type: "category-selected",
+      category: "college",
+    });
+    const finished = campusExplorerReducer(collegePreview, {
+      type: "category-browse-finished",
+    });
+
+    expect(facultyPreview.browsingCategory).toBe("faculty");
+    expect(collegePreview.browsingCategory).toBe("college");
+    expect(finished.activeCategory).toBe("college");
+    expect(finished.browsingCategory).toBeUndefined();
+  });
+
+  it("hides category browsing context when a specific place is selected", () => {
+    const preview = campusExplorerReducer(initialCampusExplorerState, {
+      type: "category-selected",
+      category: "college",
+    });
+    const place = getCampusPlace("college", "cempaka")!;
+    const selected = campusExplorerReducer(preview, {
+      type: "place-selected",
+      place,
+    });
+
+    expect(selected.selectedPlace).toBe(place);
+    expect(selected.browsingCategory).toBeUndefined();
   });
 });

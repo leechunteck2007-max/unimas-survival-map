@@ -32,29 +32,3 @@ button {
   background: #a7f3d0;
   color: #064e3b;
 }
-
-@keyframes category-tap-hint {
-  0% {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-  10%,
-  84% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(0.25rem);
-  }
-}
-
-.category-tap-hint {
-  animation: category-tap-hint 2.8s ease-out both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .category-tap-hint {
-    animation: none;
-  }
-}

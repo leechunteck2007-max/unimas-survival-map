@@ -24,11 +24,11 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 - Unified search, All/Faculties/Kolej filters, one-click map focus, repeated selection, marker popups, approximate Near You ranking, Google Maps navigation, and the selected-place route display are implemented.
 - Fourteen canonical categories now share one configuration and one CampusPlace pipeline: Fakulti, Kolej, Food, Bus Stop, Study, Printing, Store, ATM, Toilet, Parking, Health, Sports, Prayer, and Administration.
 - The mobile selector exposes common categories in a compact 4-by-2 layout and the remaining categories in a More panel. Empty categories render an explicit no-verified-data state instead of crashing or disappearing.
-- Category options now make their intentional two-step interaction discoverable: the first selection previews the category on the map and shows a temporary hint; selecting the active category again opens its existing browse/overview area.
+- Category browsing is mobile-first and fully actionable: the first selection previews the category on the map and shows a persistent in-map `View all` action; selecting the original active category again remains an additional shortcut.
 - Search labels/keywords, marker styling, filter matching, selected-place state, Nearby category filtering, distance eligibility, routing eligibility, and navigation all consume the shared category/place model.
 - Shared explorer and location providers keep search, cards, map selection, geolocation, and routing on one state path.
 - The search combobox has keyboard navigation and accessible listbox/option relationships.
-- The automated suite passes all 31 tests across data, state, distance, geolocation, client route behaviour, category extensibility, and the walking-route server boundary.
+- The automated suite passes all 37 tests across data, state, category browsing, distance, geolocation, client route behaviour, category extensibility, and the walking-route server boundary.
 
 ### PARTIALLY WORKING
 
@@ -121,7 +121,7 @@ Maintain a reliable, mobile-first campus utility with a scalable shared category
 - Fixed search results lacking complete keyboard and active-result semantics while preserving the existing one-click map focus path.
 - Fixed the walking-route API accepting malformed or unsafe provider values before sending them to the browser.
 - Fixed Near You disappearing before location permission was requested and added status-aware retry guidance.
-- Fixed category-option discoverability without changing place selection: one shared click-intent path now shows a 2.8-second, safe-area-aware hint after the first category click and dismisses it on a second click, category switch, timeout, or unmount.
+- Fixed mobile category navigation without changing place selection: the map's existing status card now becomes a persistent, safe-area-aware `View all` action after a category preview, updates immediately on category switches, and clears when a specific place is selected or an overview opens.
 
 ## Known remaining bugs and risks
 
@@ -146,9 +146,9 @@ Add the first verified source-backed Food records and regression coverage withou
 
 ## Latest development checkpoint
 
-- Last completed task: added the shared two-step category hint, preserved one-click place selection, and verified the interaction at a 390 x 844 mobile viewport.
+- Last completed task: replaced the temporary category hint with a persistent in-map `View all` action, preserved the original second-click shortcut and one-click place selection, and verified mobile and desktop layouts.
 - Current unfinished task: all newly configured categories remain empty because no new UNIMAS place facts or coordinates were fabricated; residential-college details also still exist only in directory cards.
-- Files involved in this checkpoint: `components/CategoryList.tsx`, `utils/category-interaction.ts`, `app/globals.css`, `tests/category-interaction.test.ts`, and `PROJECT_STATUS.md`.
+- Files involved in this checkpoint: `components/CategoryList.tsx`, `components/CampusMap.tsx`, `hooks/useCampusExplorer.tsx`, `app/globals.css`, `utils/category-interaction.ts`, both category/explorer tests, and `PROJECT_STATUS.md`.
 - Next exact step: resume verified Food data research and add only source-backed names, coordinates, and source URLs.
 
 ## GitHub and deployment preparation
@@ -186,7 +186,7 @@ Add the first verified source-backed Food records and regression coverage withou
 
 - `pnpm lint`: passed on 2026-09-14.
 - `pnpm typecheck`: passed on 2026-09-14 with incremental caching disabled.
-- `pnpm test`: 7 files and 35 tests passed on 2026-09-14.
+- `pnpm test`: 7 files and 37 tests passed on 2026-09-14.
 - `pnpm build`: passed on 2026-09-14; generated 15 static/generated pages and the dynamic walking-route API.
 - Walking-route smoke test: passed with distance, ETA, and 87 geometry points for a UNIMAS sample route.
 - Browser interaction checks: Faculty of Engineering and Kolej Cempaka opened on the first click; repeated Faculty of Engineering selection reopened its popup.
@@ -202,6 +202,8 @@ Add the first verified source-backed Food records and regression coverage withou
 - Local category-hint mobile/console check: passed at 390 x 844 with a compact safe-area-aware toast and zero console errors or warnings.
 - Production category-hint deployment: commit `9aef8a4` reached Vercel Production with Ready status on 2026-09-14.
 - Production category-hint regression check: passed at 390 x 844. Fakulti previewed the map on the first click and opened its overview on the second; switching through Kolej to Food replaced the single hint; Food auto-dismissed while staying active; FENG search still opened the correct marker popup in one click; console errors and warnings remained at zero.
+- Persistent category action local check: passed at 375, 390, and 430 pixel widths plus 1024-pixel desktop. The action remained visible inside the map viewport, used a 44-pixel tap target, showed verified counts, updated from Fakulti/Kolej to Food without stale context, opened the correct overview, and produced no horizontal overflow.
+- Specific-place regression after the persistent action change: FENG search still opened the Faculty of Engineering marker popup in one click and did not show a category-browsing action.
 
 Do not run `pnpm typecheck` concurrently with `pnpm build`; Next.js can rebuild `.next/types` while TypeScript is reading it and produce a transient missing-generated-module error.
 
