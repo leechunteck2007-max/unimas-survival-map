@@ -204,6 +204,9 @@ Collect and verify the actual boarding coordinates for a second useful stop on e
 - Bus V1 local browser check: passed. Dahlia global search showed distinct Kolej and Bus Stop results; selecting the Bus Stop focused its mapped marker and popup; the Bus destination search accepted FENG and rendered separate Walk/Bus cards.
 - Bus V1 responsive check: passed at a 390-pixel requested viewport (375-pixel content viewport) without horizontal overflow. The destination search, Walk/Bus cards, Nearby Bus Stops, routes, and stop list remained usable.
 - Bus V1 browser console check: zero new errors or warnings after a clean reload. A stale development-only hot-reload message from the temporary file replacement was excluded by timestamp and did not recur.
+- Bus V1 production deployment: commit `bdb18c4` was pushed to `origin/main` and reached the Vercel production site on 2026-09-14.
+- Bus V1 production browser check: the actual HTTPS site showed the Bus planner, 11-stop partial-data summary, distinct Kolej Dahlia/Dahlia Bus Stop search results, and the separate Dahlia Bus Stop map popup; console errors and warnings were zero.
+- Bus V1 production walking-route smoke test: Dahlia Bus Stop to Faculty of Engineering returned an 844-metre, 11-minute route with 30 geometry points through `/api/walking-route`.
 - Walking-route smoke test: passed with distance, ETA, and 87 geometry points for a UNIMAS sample route.
 - Browser interaction checks: Faculty of Engineering and Kolej Cempaka opened on the first click; repeated Faculty of Engineering selection reopened its popup.
 - Search keyboard interaction: Arrow Down selected the second result, Enter selected FMHS and opened its popup, Escape closed the list, and clicking the focused input reopened it.
